@@ -1,16 +1,6 @@
 import pandas as pd
 import numpy as np
 import math
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier, plot_tree
-from sklearn.metrics import r2_score, mean_squared_error, confusion_matrix, accuracy_score
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from xgboost import XGBRegressor
-
 
 def preprocessing_bl(data, meta=None, only_means=False):
     #convert features from string to List of values 
@@ -36,10 +26,12 @@ def preprocessing_bl(data, meta=None, only_means=False):
         x["max_"+col_name]=x[col_name].apply(np.max)
         x["min_"+col_name]=x[col_name].apply(np.min)
         x["mean_"+col_name]=x[col_name].apply(np.mean)
-        x["std_"+col_name]=x[col_name].apply(np.std)
+        #x["std_"+col_name]=x[col_name].apply(np.std)
         x["var_"+col_name]=x[col_name].apply(np.var)
         x["median_"+col_name]=x[col_name].apply(np.median)
         x["ptp_"+col_name]=x[col_name].apply(np.ptp)
+        #x["last_"+col_name]=x[col_name].apply(lambda t: t[-1])
+        x["mean_last_day"+col_name]=x[col_name].apply(lambda t: t[-24:]).apply(np.mean)
         return x  
 
     def aggregate_features_mean(x,col_name):
@@ -71,7 +63,23 @@ def preprocessing_bl(data, meta=None, only_means=False):
 
 
 def preprocessing(data):
-    raise NotImplementedError()
+    #convert features from string to List of values 
+    def replace_nan(x):
+        if x==" ":
+            return np.nan
+        else :
+            return float(x)
+
+    features=["temp","precip","rel_humidity","wind_dir","wind_spd","atmos_press"]
+    for feature in features : 
+        data[feature]=data[feature].apply(lambda x: [ replace_nan(X) for X in x.replace("nan"," ").split(",")])
+
+    for j in range(2,data.shape[1]-1):
+        for k in range(data.shape[0]):
+            a = data.iloc[k,j]
+            for i in range(24):
+                a[i::24] = np.nan_to_num(a[i::24], nan=np.nanmean(a[i::24]))
+
     for x in range(121):
         data["newtemp"+ str(x)] = data.temp.str[x]
         data["newprecip"+ str(x)] = data.precip.str[x]
@@ -79,3 +87,13 @@ def preprocessing(data):
         data["newwind_dir"+ str(x)] = data.wind_dir.str[x]
         data["windspeed"+ str(x)] = data.wind_spd.str[x]
         data["atmospherepressure"+ str(x)] = data.atmos_press.str[x]
+
+    features=["temp","precip","rel_humidity","wind_dir","wind_spd","atmos_press"]
+    data.drop(features,1,inplace=True)
+    data.drop('ID', axis=1, inplace=True)
+    
+    data = data.dropna()
+
+    #data = pd.get_dummies(data, columns=['location'], drop_first=True)
+
+    return data
