@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 
-def preprocessing(data, meta=None, only_means=False, use_location=True):
+def preprocessing(data, meta=None, only_means=False, use_location=True, drop=[]):
     #convert features from string to List of values 
     def replace_nan(x):
         if x==" ":
@@ -10,7 +10,11 @@ def preprocessing(data, meta=None, only_means=False, use_location=True):
         else :
             return float(x)
 
+    data.drop(drop, axis=1, inplace=True)
     features=["temp","precip","rel_humidity","wind_dir","wind_spd","atmos_press"]
+    for d in drop:
+        features.remove(d)
+        
     for feature in features : 
         data[feature]=data[feature].apply(lambda x: [ replace_nan(X) for X in x.replace("nan"," ").split(",")])
 
