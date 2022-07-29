@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 
-def preprocessing_bl(data, meta=None, only_means=False):
+def preprocessing(data, meta=None, only_means=False, use_location=True):
     #convert features from string to List of values 
     def replace_nan(x):
         if x==" ":
@@ -30,8 +30,8 @@ def preprocessing_bl(data, meta=None, only_means=False):
         x["var_"+col_name]=x[col_name].apply(np.var)
         x["median_"+col_name]=x[col_name].apply(np.median)
         x["ptp_"+col_name]=x[col_name].apply(np.ptp)
-        #x["last_"+col_name]=x[col_name].apply(lambda t: t[-1])
-        x["mean_last_day"+col_name]=x[col_name].apply(lambda t: t[-24:]).apply(np.mean)
+        x["last_"+col_name]=x[col_name].apply(lambda t: t[-1])
+        x["mean_last_day_"+col_name]=x[col_name].apply(lambda t: t[-24:]).apply(np.mean)
         return x  
 
     def aggregate_features_mean(x,col_name):
@@ -57,12 +57,14 @@ def preprocessing_bl(data, meta=None, only_means=False):
         data = data.join(meta, 'location')
         data.drop('location', axis=1, inplace=True)
     else: 
-        data = pd.get_dummies(data, columns=['location'], drop_first=True)
+        if use_location==True:
+            data = pd.get_dummies(data, columns=['location'], drop_first=True)
+        else: data.drop('location', axis=1, inplace=True)
 
     return data
 
 
-def preprocessing(data):
+def preprocessing_adv(data):
     #convert features from string to List of values 
     def replace_nan(x):
         if x==" ":
