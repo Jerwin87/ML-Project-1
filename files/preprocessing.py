@@ -49,7 +49,7 @@ def preprocessing(data, meta=None, only_means=False, use_location=False, keep_lo
             data=aggregate_features(data,col_name)
 
     #drop features
-    data.drop(features,1,inplace=True)
+    data.drop(features, axis=1, inplace=True)
     data.drop('ID', axis=1, inplace=True)
 
     #use meta if meta is given
