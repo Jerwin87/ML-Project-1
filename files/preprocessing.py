@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 
-def preprocessing(data, meta=None, only_means=False, use_location=True, drop=[]):
+def preprocessing(data, meta=None, only_means=False, use_location=False, keep_location=False, drop=[]):
     #convert features from string to List of values 
     def replace_nan(x):
         if x==" ":
@@ -61,9 +61,10 @@ def preprocessing(data, meta=None, only_means=False, use_location=True, drop=[])
         data = data.join(meta, 'location')
         data.drop('location', axis=1, inplace=True)
     else: 
-        if use_location==True:
-            data = pd.get_dummies(data, columns=['location'], drop_first=True)
-        else: data.drop('location', axis=1, inplace=True)
+        if keep_location!=True:
+            if use_location==True:
+                data = pd.get_dummies(data, columns=['location'], drop_first=True)
+            else: data.drop('location', axis=1, inplace=True)
 
     return data
 
